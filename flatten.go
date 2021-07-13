@@ -85,6 +85,28 @@ func FlattenString(nestedstr, prefix string, style SeparatorStyle) (string, erro
 	return string(flatb), nil
 }
 
+// FlattenStringToMap generates a flat map from a nested one.  Keys in the flat map will be a compound of
+// descending map keys and slice iterations.  The presentation of keys is set by style.  A prefix is joined
+// to each key.
+func FlattenStringToMap(nestedstr, prefix string, style SeparatorStyle) (map[string]interface{}, error) {
+	if !isJsonMap.MatchString(nestedstr) {
+		return nil, NotValidJsonInputError
+	}
+
+	var nested map[string]interface{}
+	err := json.Unmarshal([]byte(nestedstr), &nested)
+	if err != nil {
+		return nil, err
+	}
+
+	flatmap, err := Flatten(nested, prefix, style)
+	if err != nil {
+		return nil, err
+	}
+
+	return flatmap, nil
+}
+
 func flatten(top bool, flatMap map[string]interface{}, nested interface{}, prefix string, style SeparatorStyle) error {
 	assign := func(newKey string, v interface{}) error {
 		switch v.(type) {
